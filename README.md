@@ -22,6 +22,6 @@ You can use the following command to add an API key ID to the configuration file
 
 ## Contributions
 Contributions are welcome. Feature wishlist:
-- Introduce support for more API providers [] 
-- Improve argument parsing section []
-- Refactor code to publish as a Python module []
+- [ ] Introduce support for more API providers
+- [ ] Improve argument parsing code
+- [ ] Refactor for release as Python module
