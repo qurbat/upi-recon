@@ -1,7 +1,7 @@
 # upi-recon
 ![screenshot of upi-recon](https://i.imgur.com/GexQjBq.gif)
 
-A command line tool for UPI payment address discovery and reconaissance.
+A command line tool for UPI payment address discovery and reconnaissance.
 ## Requirements
 `pip install -r requirements.txt`
 
