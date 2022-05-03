@@ -68,7 +68,7 @@ if __name__ == '__main__':
     arguments = parser.parse_args()
     #  check the configuration
     if not os.path.exists('config/config.ini'):
-        print('[!] config.ini not found. please create one with config.ini.example')
+        print('[!] config/config.ini not found! please create the config file\n[!] you may refer to config/config.ini.example for help')
         exit(1)
     config = ConfigParser()
     config_file = 'config/config.ini'
