@@ -107,7 +107,7 @@ if __name__ == '__main__':
     
     elif arguments.gpay:
         print('[i] querying Google Pay UPI addresses for email ' + email + '@gmail.com')
-        for suffix in gpay_suffix_dict:
+        for suffix in track(gpay_suffix_dict):
             address_discovery(email + '@' + suffix, API_URL + api_key_id)
         print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
         exit(1)
