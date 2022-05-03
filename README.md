@@ -25,5 +25,6 @@ Please [refer to the documentation](https://razorpay.com/docs/payments/dashboard
 ## Contributions
 Contributions are welcome. Feature wishlist:
 - [ ] Introduce support for more API providers
+- [ ] Introduce support for wordlist based address discovery
 - [ ] Improve argument parsing code
 - [ ] Refactor for release as Python module
