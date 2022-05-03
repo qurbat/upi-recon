@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # set variables and normalize input
     API_URL = 'https://api.razorpay.com/v1/payments/validate/account?key_id='
     api_key_id = config.get('main', 'api_key_id')
-    phone = arguments.phone[2:] if arguments.phone[0:2] == '91' else arguments.phone
+    phone = arguments.phone[2:] if arguments.phone[0:2] == '91' and len(arguments.phone) > 10 else arguments.phone
     # check if api_key_id is correct
     if api_key_id and not api_key_id[0:3] == 'rzp':
         quit('[!] invalid api_key_id')
