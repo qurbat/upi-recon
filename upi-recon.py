@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import os
 import requests
 import concurrent.futures
-import signal
 
 from time import sleep
 from random import uniform as rand
@@ -53,7 +53,6 @@ if __name__ == '__main__':
     #  argument definition
     parser = argparse.ArgumentParser(description='fetch UPI addresses and associated information for a given phone number')
     #  primary arguments
-    parser.add_argument('-p', '--phone', type=str, help='phone number to query UPI addresses for')
     parser.add_argument('-t', '--threads', type=int, default=None, help='number of threads to use for parallel address discovery')
     parser.add_argument('-q', '--quiet', default=False, action='store_true', help='suppress banner')
     #  group arguments
@@ -63,10 +62,14 @@ if __name__ == '__main__':
     group_2.add_argument('-a', '--all', default=True, action='store_true', help='query all suffixes')
     group_2.add_argument('-s', '--suffix', type=str, help='query a specific suffix')
     group_3 = parser.add_mutually_exclusive_group()
+    group_3.add_argument('-p', '--phone', type=str, help='phone number to query UPI addresses for')
     group_3.add_argument('-g', '--gpay', type=str, help='enter gmail id without @gmail.com')
     #  parse arguments
     arguments = parser.parse_args()
     #  check the configuration
+    if not os.path.exists('config/config.ini'):
+        print('[!] config.ini not found. please create one with config.ini.example')
+        exit(1)
     config = ConfigParser()
     config_file = 'config/config.ini'
     config.read(config_file)
@@ -84,7 +87,7 @@ if __name__ == '__main__':
         email = arguments.gpay
         phone = '8888888888'
     else:
-        phone = arguments.phone[2:] if arguments.phone[0:2] == '91' else arguments.phone
+        phone = arguments.phone[2:] if arguments.phone[0:2] == '91' and len(arguments.phone) > 10 else arguments.phone
     # check if api_key_id is correct
     if api_key_id and not api_key_id[0:3] == 'rzp':
         quit('[!] invalid api_key_id')
