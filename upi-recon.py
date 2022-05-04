@@ -64,6 +64,8 @@ if __name__ == '__main__':
     group_3 = parser.add_mutually_exclusive_group()
     group_3.add_argument('phone', type=str, nargs='?', help='phone number to query UPI addresses for')
     group_3.add_argument('-g', '--gpay', type=str, nargs='?', help='enter gmail address to query Google Pay UPI addresses for')
+    group_4 = parser.add_mutually_exclusive_group()
+    group_4.add_argument('-v', '--vpa', type=str, nargs='?', help='enter a UPI VPA')
     #  parse arguments
     arguments = parser.parse_args()
     #  check the configuration
@@ -83,11 +85,18 @@ if __name__ == '__main__':
     # set variables and normalize input
     API_URL = 'https://api.razorpay.com/v1/payments/validate/account?key_id='
     api_key_id = config.get('main', 'api_key_id')
-    if not arguments.gpay and not arguments.phone:
-        print('[!] please enter a phone number or gmail address')
+    if not arguments.gpay and not arguments.phone and not arguments.vpa:
+        print('[!] please enter a phone number or gmail address or vpa')
         exit(1)
     if arguments.gpay and not arguments.phone:
         email = arguments.gpay[:-10] if arguments.gpay.endswith('@gmail.com') else arguments.gpay
+        phone = '8888888888'
+    elif arguments.vpa and not arguments.phone:
+        if arguments.vpa.split('@')[1] in upi_suffix_dict:
+            vpa = arguments.vpa
+        else:
+            print('[!] please enter a valid vpa')
+            exit(1)
         phone = '8888888888'
     elif arguments.phone and arguments.gpay:
         print('[!] please enter either a phone number or a gmail address')
@@ -138,6 +147,12 @@ if __name__ == '__main__':
             print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
             exit(1)
     
+    elif arguments.vpa:
+        print('[i] querying ' + vpa)
+        address_discovery(vpa, API_URL + api_key_id)
+        print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+        exit(1)
+
     elif arguments.all and not arguments.threads: #  query all with no concurrency
         print('[i] querying UPI addresses for phone number ' + phone)
         for suffix in track(upi_suffix_dict):
