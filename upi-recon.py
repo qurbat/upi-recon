@@ -30,7 +30,8 @@ banner = """
                     upi-recon.py -g <gmail_address> (query common Google Pay UPI addresses for specified google account)
 """
 
-upi_suffix_dict = ['airtel', 'airtelpaymentsbank', 'apl', 'abfspay', 'allbank', 'andb', 'aubank', 'axis', 'albk', 'allahabadbank', 'apb', 'axisb', 'axisbank', 'axisgo', 'barodampay', 'barodapay', 'bandhan', 'birla', 'boi', 'cbin', 'cboi', 'centralbank', 'cnrb', 'dlb', 'eazypay', 'ezeepay', 'fbl', 'federal', 'freecharge', 'cmsidfc', 'csbcash', 'csbpay', 'cub', 'dbs', 'dcb', 'denabank', 'equitas', 'finobank', 'hdfcbank', 'hdfcbankjd', 'hsbc', 'ibl', 'icici', 'idbi', 'idbibank', 'idfcbank', 'icicibank', 'idfc', 'idfcnetc', 'ikwik', 'imobile', 'indianbank', 'indus', 'jkb', 'karurvysyabank', 'kaypay', 'kbl', 'kmb', 'kmbl', 'kotak', 'kvb', 'kvbank', 'lime', 'mahb', 'myicici', 'obc', 'okaxis', 'okhdfcbank', 'okicici', 'oksbi', 'paytm', 'payzapp', 'pingpay', 'pnb', 'pockets', 'rajgovhdfcbank', 'rbl', 'rmhdfcbank', 'sbi', 'sib', 'ubi', 'uboi', 'uco', 'unionbank', 'unionbankofindia', 'united', 'upi', 'utbi', 'ybl', 'yesbank', 'yesbankltd', 'indbank', 'indianbk', 'iob', 'jsbp', 'karb', 'lvb', 'lvbank', 'psb', 'purz', 'sc', 'scb', 'scbl', 'scmobile', 'srcb', 'synd', 'syndbank', 'syndicate', 'tjsb', 'vijayabank', 'vijb', 'vjb'] 
+suffix_file = open("vpa_suffixes.txt", "r")
+upi_suffix_dict = suffix_file.readlines() 
 
 gpay_suffix_dict = ['okicici', 'oksbi', 'okaxis', 'okhdfcbank']
 
