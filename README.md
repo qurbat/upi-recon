@@ -16,14 +16,18 @@ Please [refer to the documentation](https://razorpay.com/docs/payments/dashboard
 
 ## Usage
 ### Query all possible UPI addresses for the provided phone number
-`upi-recon.py <phone_number>`
+`upi-recon.py -p <phone_number>`
 ### Query all possible UPI addresses for the provided phone number using a specified number of threads
-`upi-recon.py <phone_number> -t 5`
+`upi-recon.py -p <phone_number> -t 5`
 ### Query a single UPI address for the provided phone number using a provided suffix
-`upi-recon.py <phone_number> -s <suffix>`
+`upi-recon.py -p <phone_number> -s <suffix>`
+### Query all possible UPI addresses for the provided Gmail address
+`upi-recon.py -g <gmail_username>`
+
 
 ## Contributions
 Contributions are welcome. Feature wishlist:
+- [x] Introduce support for Google Pay addresses
 - [ ] Introduce support for more API providers
 - [ ] Introduce support for wordlist based address discovery
 - [ ] Improve argument parsing code
