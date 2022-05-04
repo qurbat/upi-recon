@@ -28,7 +28,7 @@ Please [refer to the documentation](https://razorpay.com/docs/payments/dashboard
 ## Contributions
 Contributions are welcome. Feature wishlist:
 - [x] Introduce support for Google Pay addresses
+- [x] Improve argument parsing code
 - [ ] Introduce support for more API providers
 - [ ] Introduce support for wordlist based address discovery
-- [ ] Improve argument parsing code
 - [ ] Refactor for release as Python module
