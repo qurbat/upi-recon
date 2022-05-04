@@ -31,7 +31,8 @@ banner = """
 """
 
 suffix_file = open("vpa_suffixes.txt", "r")
-upi_suffix_dict = suffix_file.readlines() 
+upi_suffix_dict = suffix_file.read().splitlines() # read all suffixes into a list
+suffix_file.close()
 
 gpay_suffix_dict = ['okicici', 'oksbi', 'okaxis', 'okhdfcbank']
 
@@ -156,7 +157,5 @@ if __name__ == '__main__':
                 except KeyboardInterrupt:
                     print('\n[!] interrupted! stopping threads...')
                     exit(1)
-                finally:
-                    print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-                    exit(1)
+        print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
         exit(1)
