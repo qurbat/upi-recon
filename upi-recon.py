@@ -45,6 +45,7 @@ def searchvpa(searchtext, vpa_dict, threadcount):
         for suffix in track(vpa_dict):
             address_discovery(searchtext + '@' + suffix, API_URL + api_key_id)
     else:
+        threadcount = 10 if threadcount > 10 else threadcount
         with concurrent.futures.ThreadPoolExecutor(max_workers=threadcount) as executor:
             for suffix in vpa_dict:
                 try:
@@ -75,7 +76,7 @@ if __name__ == '__main__':
     #  argument definition
     parser = argparse.ArgumentParser(description='fetch UPI addresses and associated information for a given phone number')
     #  primary arguments
-    parser.add_argument('-t', '--threads', type=int, default=0, help='number of threads to use for parallel address discovery')
+    parser.add_argument('-t', '--threads', type=int, default=5, help='number of threads to use for parallel address discovery')
     parser.add_argument('-q', '--quiet', default=False, action='store_true', help='suppress banner')
     #  group arguments
     group_1 = parser.add_mutually_exclusive_group()
@@ -137,7 +138,7 @@ if __name__ == '__main__':
     elif arguments.gpay:
         searchtext = arguments.gpay[:-10] if arguments.gpay.endswith('@gmail.com') else arguments.gpay
         print('[i] querying Google Pay UPI addresses for ' + searchtext + '@gmail.com')
-        searchvpa(searchtext,gpay_suffix_dict,arguments.threads)
+        searchvpa(searchtext,gpay_suffix_dict,4) #Pass threads = 4 since there are only 4 VPA issuers for GPay
 
     elif arguments.fastag:
         searchtext = 'netc.' + arguments.fastag
