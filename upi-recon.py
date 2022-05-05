@@ -25,7 +25,7 @@ banner = """
 	# Author: Karan Saini (@squeal)
 	# URL: https://github.com/qurbat/upi-recon
         # Usage:    upi-recon.py <phone_number> (query all possible UPI addresses)
-                    upi-recon.py <phone_number> -t 5 (query all possible UPI addresses with specified number of threads)
+                    upi-recon.py <phone_number> -t [1 - 10] (query all possible UPI addresses with specified number of threads)
                     upi-recon.py -g <gmail_address> (query common Google Pay UPI addresses for specified google account)
                     upi-recon.py -v <vpa> (query a single UPI VPA)
                     upi-recon.py -w <word> (query a single word)
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     #  argument definition
     parser = argparse.ArgumentParser(description='fetch UPI addresses and associated information for a given phone number')
     #  primary arguments
-    parser.add_argument('-t', '--threads', type=int, default=5, help='number of threads to use for parallel address discovery')
+    parser.add_argument('-t', '--threads', type=int, default=0, help='number of threads to use for parallel address discovery')
     parser.add_argument('-q', '--quiet', default=False, action='store_true', help='suppress banner')
     #  group arguments
     group_1 = parser.add_mutually_exclusive_group()
