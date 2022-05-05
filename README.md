@@ -19,10 +19,14 @@ Please [refer to the documentation](https://razorpay.com/docs/payments/dashboard
 `upi-recon.py -p <phone_number>`
 ### Query all possible UPI addresses for the provided phone number using a specified number of threads
 `upi-recon.py -p <phone_number> -t 5`
-### Query a single UPI address for the provided phone number using a provided suffix
-`upi-recon.py -p <phone_number> -s <suffix>`
+### Query a single UPI address for the provided VPA
+`upi-recon.py -v <single_vpa>`
 ### Query all possible UPI addresses for the provided Gmail address
 `upi-recon.py -g <gmail_username>`
+### Query all possible FASTags for a given vehicle number
+`upi-recon.py -f <vehicle_number>`
+### Query all possible UPI addresses for the provided word
+`upi-recon.py -w <word>`
 
 
 ## Contributions
