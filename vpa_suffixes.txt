@@ -23,7 +23,6 @@ cboi
 centralbank
 cmsidfc
 cnrb
-corp
 csbcash
 csbpay
 cub
@@ -65,7 +64,6 @@ karb
 karurvysyabank
 kaypay
 kbl
-kbl052
 kmb
 kmbl
 kotak
@@ -78,6 +76,7 @@ mahb
 myicici
 obc
 okaxis
+okbizaxis
 okhdfcbank
 okicici
 oksbi
