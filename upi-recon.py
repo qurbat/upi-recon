@@ -34,10 +34,11 @@ banner = """
 
 with open("vpa_suffixes.txt", "r") as suffix_file:
     upi_suffix_dict = suffix_file.read().splitlines() # read all suffixes into a list
+suffix_file.close()
 
 with open("fastag_issuer_suffixes.txt", "r") as fastag_suffix_file:
     fastag_suffix_dict = fastag_suffix_file.read().splitlines()
-
+fastag_suffix_file.close()
 gpay_suffix_dict = ['okicici', 'oksbi', 'okaxis', 'okhdfcbank']
 
 def searchvpa(searchtext, vpa_dict, threadcount):
@@ -48,12 +49,8 @@ def searchvpa(searchtext, vpa_dict, threadcount):
         threadcount = 10 if threadcount > 10 else threadcount
         with concurrent.futures.ThreadPoolExecutor(max_workers=threadcount) as executor:
             for suffix in vpa_dict:
-                try:
-                    executor.submit(address_discovery, searchtext + '@' + suffix, API_URL + api_key_id)
-                    sleep(rand(0.1, 0.2))
-                except KeyboardInterrupt as e:
-                    print('\n[!] interrupted! stopping threads...')
-                    exit(1)
+                executor.submit(address_discovery, searchtext + '@' + suffix, API_URL + api_key_id)
+                sleep(rand(0.1, 0.2))
     print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     exit(1)
 
@@ -67,7 +64,7 @@ def address_discovery(vpa, api_url):
 #  todo:      store in dict by default and print if verbosity is set
         if r.status_code == 400 and "Please enter a valid Virtual Payment Address" in r.text:
             print('[-] query failed for ' + vpa)
-            print('[!] "' + suffix + '" may not be a valid suffix')
+            print('[!] "' + vpa + '" may not be a valid address')
     except Exception as e:
         print(e)
 
