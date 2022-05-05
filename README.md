@@ -28,6 +28,12 @@ Please [refer to the documentation](https://razorpay.com/docs/payments/dashboard
 ### Query all possible UPI addresses for the provided word
 `upi-recon.py -w <word>`
 
+## Disclaimer / Warranty
+
+- An UPI Virtual Payment Address does not have data security classification and by virtue of its usage and practice, considered a public information, just as how email address of a person is publicly available information.
+- The tool lets one verify the name of account holder for a specific set of payment addresses. The same is possible manually by opening any UPI app and querying in the "Make payment to a contact / VPA" screen in most apps.
+- VPAs are virtual and can be dynamically linked to any bank account that is linked to the same mobile number and hence the underlying owner of the account can differ at different points of time, should the owner of VPA changes the destination of the VPA to a different bank account.
+- Use of this tool comes with no warranties.
 
 ## Contributions
 Contributions are welcome. Feature wishlist:
