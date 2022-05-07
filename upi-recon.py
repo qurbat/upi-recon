@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#  -*- coding: utf-8 -*-
 
 import argparse
 import os
@@ -22,29 +22,34 @@ banner = """
        | |                               
        |_|                               
 
-	# Author: Karan Saini (@squeal)
-	# URL: https://github.com/qurbat/upi-recon
-        # Usage:    upi-recon.py <phone_number> (query all possible UPI addresses)
-                    upi-recon.py <phone_number> -t [1 - 10] (query all possible UPI addresses with specified number of threads)
-                    upi-recon.py -g <gmail_address> (query common Google Pay UPI addresses for specified google account)
-                    upi-recon.py -v <vpa> (query a single UPI VPA)
-                    upi-recon.py -w <word> (query a single word)
-                    upi-recon.py -f <vehicle_number> (query a vehicle number to check name of owner of the linked FASTag)
+	#  Author: Karan Saini (@squeal)
+	#  URL: https://github.com/qurbat/upi-recon
+        #  Usage:    upi-recon.py <phone_number> (query all possible UPI addresses)
+                     upi-recon.py <phone_number> -t [1 - 10] (query all possible UPI addresses with specified number of threads)
+                     upi-recon.py -g <gmail_address> (query common Google Pay UPI addresses for specified google account)
+                     upi-recon.py -v <vpa> (query a single UPI VPA)
+                     upi-recon.py -w <word> (query a single word)
+                     upi-recon.py -f <vehicle_number> (query a vehicle number to check name of owner of the linked FASTag)
 """
 
 with open("data/general_vpa_suffixes.txt", "r") as suffix_file:
-    upi_suffix_dict = suffix_file.read().splitlines() # read all suffixes into a list
-suffix_file.close()
+    upi_suffix_dict = suffix_file.read().splitlines() #  read all suffixes into a list
+    suffix_file.close()
 
 with open("data/fastag_issuer_suffixes.txt", "r") as fastag_suffix_file:
     fastag_suffix_dict = fastag_suffix_file.read().splitlines()
-fastag_suffix_file.close()
+    fastag_suffix_file.close()
+
 gpay_suffix_dict = ['okicici', 'oksbi', 'okaxis', 'okhdfcbank']
 
 def searchvpa(searchtext, vpa_dict, threadcount):
     if(threadcount == 0):
-        for suffix in track(vpa_dict):
-            address_discovery(searchtext + '@' + suffix, API_URL + api_key_id)
+        for suffix in track(vpa_dict, description="querying {} addresses".format(len(vpa_dict))):
+            try:
+                address_discovery(searchtext + '@' + suffix, API_URL + api_key_id)
+            except KeyboardInterrupt:
+                print('[!] execution interrupted. quitting...')
+                exit(0)
     else:
         threadcount = 10 if threadcount > 10 else threadcount
         with concurrent.futures.ThreadPoolExecutor(max_workers=threadcount) as executor:
@@ -109,22 +114,22 @@ if __name__ == '__main__':
         with open(config_file, 'w') as configfile:
             config.write(configfile)
     
-    # set variables and normalize input
+    #  API stuff
     API_URL = 'https://api.razorpay.com/v1/payments/validate/account?key_id='
     api_key_id = config.get('main', 'api_key_id')
-    # check if api_key_id is correct
+    #  check if api_key_id is correct
     if api_key_id and not api_key_id[0:3] == 'rzp':
         quit('[!] invalid api_key_id')
-
-    #  informational header
-    print('[i] starting at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))    
+    #  print informational header
+    print('[i] starting at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    #  query address directly
     if arguments.vpa:
         if not arguments.vpa.split('@')[1] in upi_suffix_dict:
             print('[!] please enter a valid vpa')
         else:
             address_discovery(arguments.vpa, API_URL + api_key_id)
         exit(1)
-    
+    #  query based on phone number
     elif arguments.phone:
         searchtext = arguments.phone[2:] if arguments.phone[0:2] == '91' and len(arguments.phone) > 10 else arguments.phone
         if not searchtext.isdigit():
@@ -133,22 +138,24 @@ if __name__ == '__main__':
             print('[!] please enter a valid 10 digit phone number')
             exit(1)
         print('[i] querying UPI addresses for phone number ' + searchtext)
-        searchvpa(searchtext,upi_suffix_dict,arguments.threads)
-
+        searchvpa(searchtext, upi_suffix_dict, arguments.threads)
+    #  query based on gpay address
     elif arguments.gpay:
         searchtext = arguments.gpay[:-10] if arguments.gpay.endswith('@gmail.com') else arguments.gpay
-        print('[i] querying Google Pay UPI addresses for ' + searchtext + '@gmail.com')
-        searchvpa(searchtext,gpay_suffix_dict,4) #Pass threads = 4 since there are only 4 VPA issuers for GPay
-
+        print('[i] querying {} UPI addresses for '.format(len(gpay_suffix_dict)) + searchtext + '@gmail.com')
+        searchvpa(searchtext, gpay_suffix_dict, 4) #  overriding threads to 4 as there are only 4 VPA addresses to check for gpay
+    #  query based on fastag (vehicle registration number)
     elif arguments.fastag:
         searchtext = 'netc.' + arguments.fastag
         print('[i] querying FASTags for vehicle ' + arguments.fastag)
-        searchvpa(searchtext,fastag_suffix_dict,arguments.threads)
-
-    elif arguments.word:
-        searchtext = arguments.word
+        searchvpa(searchtext, fastag_suffix_dict, arguments.threads)
+    #  query alphanumeric address across all providers
+    elif arguments.alphanumeric:
+        searchtext = arguments.alphanumeric if '@' not in arguments.alphanumeric else arguments.alphanumeric.split('@')[0]
         print('[i] querying word ' + searchtext + ' in VPAs')
-        searchvpa(searchtext,upi_suffix_dict,arguments.threads)
+        searchvpa(searchtext, upi_suffix_dict, arguments.threads)
+    #  print error if no arguments provided
+    #  this is a bad way to handle empty arguments, but it works 
     else:
         print('[!] please enter a phone number / gmail address / vpa / word / vehicle number')
         exit(1)
