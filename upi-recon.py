@@ -2,11 +2,13 @@
 #  -*- coding: utf-8 -*-
 
 import argparse
+from audioop import add
 import os
 import requests
 import concurrent.futures
 
 from time import sleep
+from sys import exit
 from random import uniform as rand
 from datetime import datetime
 from configparser import ConfigParser
@@ -24,27 +26,31 @@ banner = """
 
 	#  Author: Karan Saini (@squeal)
 	#  URL: https://github.com/qurbat/upi-recon
-        #  Usage:    upi-recon.py <phone_number> (query all possible UPI addresses)
-                     upi-recon.py <phone_number> -t [1 - 10] (query all possible UPI addresses with specified number of threads)
-                     upi-recon.py -g <gmail_address> (query common Google Pay UPI addresses for specified google account)
-                     upi-recon.py -v <vpa> (query a single UPI VPA)
-                     upi-recon.py -w <word> (query a single word)
-                     upi-recon.py -f <vehicle_number> (query a vehicle number to check name of owner of the linked FASTag)
+        #  Usage:    upi-recon.py <e.g., 9999999999> (query all suffixes for phone number)
+                     upi-recon.py -g <e.g., example@gmail.com> (query known gpay suffixes for google account)
+                     upi-recon.py -v <e.g., address@psp> (query a single UPI VPA)
+                     upi-recon.py -i <e.g., identifier> (query all suffixes for an arbitrary alphanumeric identifier)
+                     upi-recon.py -f <e.g., MH01AA1234> (query known FASTag suffixes for vehicle registration number)
 """
 
-with open("data/general_vpa_suffixes.txt", "r") as suffix_file:
+#  opting to load lists from a file instead of hardcoding them
+#  as this would be more flexible, allow for easier updates,
+#  and allow others to make use of the lists provided
+with open("data/general_suffixes.txt", "r") as suffix_file:
     upi_suffix_dict = suffix_file.read().splitlines() #  read all suffixes into a list
     suffix_file.close()
 
-with open("data/fastag_issuer_suffixes.txt", "r") as fastag_suffix_file:
+with open("data/fastag_suffixes.txt", "r") as fastag_suffix_file:
     fastag_suffix_dict = fastag_suffix_file.read().splitlines()
     fastag_suffix_file.close()
 
-gpay_suffix_dict = ['okicici', 'oksbi', 'okaxis', 'okhdfcbank']
+with open("data/gpay_suffixes.txt", "r") as gpay_suffix_file:
+    gpay_suffix_dict = gpay_suffix_file.read().splitlines()
+    gpay_suffix_file.close()
 
 def searchvpa(searchtext, vpa_dict, threadcount):
     if(threadcount == 0):
-        for suffix in track(vpa_dict, description="querying {} addresses".format(len(vpa_dict))):
+        for suffix in track(vpa_dict, description="querying . . . "):
             try:
                 address_discovery(searchtext + '@' + suffix, API_URL + api_key_id)
             except KeyboardInterrupt:
@@ -58,7 +64,10 @@ def searchvpa(searchtext, vpa_dict, threadcount):
                     executor.submit(address_discovery, searchtext + '@' + suffix, API_URL + api_key_id)
                     sleep(rand(0.1, 0.2))
             except KeyboardInterrupt:
-                #  quit ungracefully on keyboard interrupt
+                #  quit ungracefully on keyboard interrupt:
+                #  considering the bandwidth consumed for requests,
+                #  there is no reason to wait for the threads to finish
+                #  sorry for the inconvenience
                 executor._threads.clear()
                 concurrent.futures.thread._threads_queues.clear()
                 print('\n[!] execution interrupted. quitting...')
@@ -79,7 +88,7 @@ def address_discovery(vpa, api_url):
 
 if __name__ == '__main__':
     #  argument definition
-    parser = argparse.ArgumentParser(description='fetch UPI addresses and associated information for a given phone number')
+    parser = argparse.ArgumentParser(prog='upi-recon.py')
     #  primary arguments
     parser.add_argument('-t', '--threads', type=int, default=0, help='number of threads to use for parallel address discovery')
     parser.add_argument('-q', '--quiet', default=False, action='store_true', help='suppress banner')
@@ -93,7 +102,7 @@ if __name__ == '__main__':
     group_4 = parser.add_mutually_exclusive_group()
     group_4.add_argument('-v', '--vpa', type=str, nargs='?', help='enter a single VPA to query')
     group_5 = parser.add_mutually_exclusive_group()
-    group_5.add_argument('-w', '--word', type=str, nargs='?', help='enter an address to query against all providers')
+    group_5.add_argument('-i', '--identifier', type=str, nargs='?', help='enter an address to query against all providers')
     group_6 = parser.add_mutually_exclusive_group()
     group_6.add_argument('-f', '--fastag', type=str, nargs='?', help='Enter a vehicle number to search for')
     
@@ -119,43 +128,45 @@ if __name__ == '__main__':
     api_key_id = config.get('main', 'api_key_id')
     #  check if api_key_id is correct
     if api_key_id and not api_key_id[0:3] == 'rzp':
-        quit('[!] invalid api_key_id')
+        exit('[!] invalid api_key_id')
     #  print informational header
     print('[i] starting at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     #  query address directly
-    if arguments.vpa:
-        if not arguments.vpa.split('@')[1] in upi_suffix_dict:
-            print('[!] please enter a valid vpa')
-        else:
-            address_discovery(arguments.vpa, API_URL + api_key_id)
-        exit(1)
+    #  this may not be the best way to handle this, but it works for now
+    if arguments.vpa and '@' in arguments.vpa:
+        address_discovery(arguments.vpa, API_URL + api_key_id)
+    elif arguments.vpa and '@' not in arguments.vpa:
+        print('[!] please enter a full, valid UPI address e.g. <identifier>@<provider>')
+        exit(0)
+
     #  query based on phone number
     elif arguments.phone:
         searchtext = arguments.phone[2:] if arguments.phone[0:2] == '91' and len(arguments.phone) > 10 else arguments.phone
         if not searchtext.isdigit():
-            quit('[!] phone number must be numeric')
+            exit('[!] phone number must be numeric')
         if len(searchtext) != 10:
             print('[!] please enter a valid 10 digit phone number')
             exit(1)
-        print('[i] querying UPI addresses for phone number ' + searchtext)
+        print('[i] querying {} suffixes for phone number '.format(len(upi_suffix_dict)) + searchtext)
         searchvpa(searchtext, upi_suffix_dict, arguments.threads)
     #  query based on gpay address
     elif arguments.gpay:
         searchtext = arguments.gpay[:-10] if arguments.gpay.endswith('@gmail.com') else arguments.gpay
-        print('[i] querying {} UPI addresses for '.format(len(gpay_suffix_dict)) + searchtext + '@gmail.com')
+        print('[i] querying {} suffixes for '.format(len(gpay_suffix_dict)) + searchtext + '@gmail.com')
         searchvpa(searchtext, gpay_suffix_dict, 4) #  overriding threads to 4 as there are only 4 VPA addresses to check for gpay
-    #  query based on fastag (vehicle registration number)
+    #  query based on fastag vehicle registration number
     elif arguments.fastag:
         searchtext = 'netc.' + arguments.fastag
-        print('[i] querying FASTags for vehicle ' + arguments.fastag)
+        print('[i] querying {} suffixes for vehicle '.format(len(fastag_suffix_dict)) + arguments.fastag)
         searchvpa(searchtext, fastag_suffix_dict, arguments.threads)
-    #  query alphanumeric address across all providers
-    elif arguments.alphanumeric:
-        searchtext = arguments.alphanumeric if '@' not in arguments.alphanumeric else arguments.alphanumeric.split('@')[0]
-        print('[i] querying word ' + searchtext + ' in VPAs')
+    #  query alphanumeric identifier across all providers
+    elif arguments.identifier:
+        searchtext = arguments.identifier if '@' not in arguments.identifier else arguments.identifier.split('@')[0]
+        print('[i] querying {} suffixes for identifier '.format(len(upi_suffix_dict)) + searchtext)
         searchvpa(searchtext, upi_suffix_dict, arguments.threads)
     #  print error if no arguments provided
-    #  this is a bad way to handle empty arguments, but it works 
+    #  this is a probably a bad way to handle empty arguments, but it works 
     else:
-        print('[!] please enter a phone number / gmail address / vpa / word / vehicle number')
+        print('[!] please enter a valid argument')
+        print('[!] usage: upi-recon.py -h for help')
         exit(1)
