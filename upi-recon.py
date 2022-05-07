@@ -48,25 +48,28 @@ def searchvpa(searchtext, vpa_dict, threadcount):
     else:
         threadcount = 10 if threadcount > 10 else threadcount
         with concurrent.futures.ThreadPoolExecutor(max_workers=threadcount) as executor:
-            for suffix in vpa_dict:
-                executor.submit(address_discovery, searchtext + '@' + suffix, API_URL + api_key_id)
-                sleep(rand(0.1, 0.2))
+            try:
+                for suffix in vpa_dict:
+                    executor.submit(address_discovery, searchtext + '@' + suffix, API_URL + api_key_id)
+                    sleep(rand(0.1, 0.2))
+            except KeyboardInterrupt:
+                #  quit ungracefully on keyboard interrupt
+                executor._threads.clear()
+                concurrent.futures.thread._threads_queues.clear()
+                print('\n[!] execution interrupted. quitting...')
     print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     exit(1)
 
 def address_discovery(vpa, api_url):
-    try:
-        r = requests.post(api_url, data={'entity':'vpa','value':vpa}, headers={'Connection':'close'})
-        if r.status_code == 200 and r.json()['success'] is True:
-            print('[+] ' + vpa + ' is a valid UPI payment address registered to ' + r.json()['customer_name']) if r.json()['customer_name'] else print('[!] The name associated with the UPI payment address could not be determined')
+    r = requests.post(api_url, data={'entity':'vpa','value':vpa}, headers={'Connection':'close'})
+    if r.status_code == 200 and r.json()['success'] is True:
+        print('[+] ' + vpa + ' is a valid UPI payment address registered to ' + r.json()['customer_name']) if r.json()['customer_name'] else print('[!] The name associated with the UPI payment address could not be determined')
 #       if r.status_code == 200 and r.json()['success'] == False:
 #            print('[-] ' + vpa + ' not a valid UPI address')
 #  todo:      store in dict by default and print if verbosity is set
-        if r.status_code == 400 and "Please enter a valid Virtual Payment Address" in r.text:
-            print('[-] query failed for ' + vpa)
-            print('[!] "' + vpa + '" may not be a valid address')
-    except Exception as e:
-        print(e)
+    if r.status_code == 400 and "Please enter a valid Virtual Payment Address" in r.text:
+        print('[-] query failed for ' + vpa)
+        print('[!] "' + vpa + '" may not be a valid address')
 
 
 if __name__ == '__main__':
@@ -77,7 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('-q', '--quiet', default=False, action='store_true', help='suppress banner')
     #  group arguments
     group_1 = parser.add_mutually_exclusive_group()
-    group_1.add_argument('--api_key_id', type=str, help='add api_key_id to config.ini')
+    group_1.add_argument('--api_key_id', type=str, help='add api_key_id to config/config.ini')
     group_2 = parser.add_mutually_exclusive_group()
     group_2.add_argument('phone', type=str, nargs='?', help='phone number to query UPI addresses for')
     group_3 = parser.add_mutually_exclusive_group()
@@ -101,7 +104,7 @@ if __name__ == '__main__':
     #  deal with arguments
     if arguments.quiet is False:
         print(banner)
-    if arguments.api_key_id:  #  write api_key_id to config.ini if provided 
+    if arguments.api_key_id:  #  write api_key_id to config/config.ini if provided 
         config.set('main', 'api_key_id', arguments.api_key_id)
         with open(config_file, 'w') as configfile:
             config.write(configfile)
