@@ -23,9 +23,9 @@ Please [refer to the documentation](https://razorpay.com/docs/payments/dashboard
 `upi-recon.py -v <single_vpa>`
 ### Query all possible UPI addresses for the provided Gmail address
 `upi-recon.py -g <gmail_username>`
-### Query all possible FASTags for a given vehicle number
+### Query all possible FASTag addresses for a vehicle registration number
 `upi-recon.py -f <vehicle_number>`
-### Query all possible UPI addresses for the provided word
+### Query all possible UPI addresses for a given term
 `upi-recon.py -w <word>`
 
 ## Disclaimer / Warranty

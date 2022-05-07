@@ -32,11 +32,11 @@ banner = """
                     upi-recon.py -f <vehicle_number> (query a vehicle number to check name of owner of the linked FASTag)
 """
 
-with open("vpa_suffixes.txt", "r") as suffix_file:
+with open("data/general_vpa_suffixes.txt", "r") as suffix_file:
     upi_suffix_dict = suffix_file.read().splitlines() # read all suffixes into a list
 suffix_file.close()
 
-with open("fastag_issuer_suffixes.txt", "r") as fastag_suffix_file:
+with open("data/fastag_issuer_suffixes.txt", "r") as fastag_suffix_file:
     fastag_suffix_dict = fastag_suffix_file.read().splitlines()
 fastag_suffix_file.close()
 gpay_suffix_dict = ['okicici', 'oksbi', 'okaxis', 'okhdfcbank']
@@ -83,9 +83,9 @@ if __name__ == '__main__':
     group_3 = parser.add_mutually_exclusive_group()
     group_3.add_argument('-g', '--gpay', type=str, nargs='?', help='enter gmail address to query Google Pay UPI addresses for')
     group_4 = parser.add_mutually_exclusive_group()
-    group_4.add_argument('-v', '--vpa', type=str, nargs='?', help='Enter a VPA to verify')
+    group_4.add_argument('-v', '--vpa', type=str, nargs='?', help='enter a single VPA to query')
     group_5 = parser.add_mutually_exclusive_group()
-    group_5.add_argument('-w', '--word', type=str, nargs='?', help='Enter a word to search for')
+    group_5.add_argument('-w', '--word', type=str, nargs='?', help='enter an address to query against all providers')
     group_6 = parser.add_mutually_exclusive_group()
     group_6.add_argument('-f', '--fastag', type=str, nargs='?', help='Enter a vehicle number to search for')
     
