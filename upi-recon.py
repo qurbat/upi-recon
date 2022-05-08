@@ -38,15 +38,12 @@ banner = """
 #  and allow others to make use of the lists provided
 with open("data/general_suffixes.txt", "r") as suffix_file:
     upi_suffix_dict = suffix_file.read().splitlines() #  read all suffixes into a list
-    suffix_file.close()
 
 with open("data/fastag_suffixes.txt", "r") as fastag_suffix_file:
     fastag_suffix_dict = fastag_suffix_file.read().splitlines()
-    fastag_suffix_file.close()
 
 with open("data/gpay_suffixes.txt", "r") as gpay_suffix_file:
     gpay_suffix_dict = gpay_suffix_file.read().splitlines()
-    gpay_suffix_file.close()
 
 def searchvpa(searchtext, vpa_dict, threadcount):
     if(threadcount == 0):
