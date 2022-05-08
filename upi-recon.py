@@ -1,12 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#  -*- coding: utf-8 -*-
 
 import argparse
+from audioop import add
 import os
 import requests
 import concurrent.futures
 
 from time import sleep
+from sys import exit
 from random import uniform as rand
 from datetime import datetime
 from configparser import ConfigParser
@@ -22,50 +24,85 @@ banner = """
        | |                               
        |_|                               
 
-	# Author: Karan Saini (@squeal)
-	# URL: https://github.com/qurbat/upi-recon
-        # Usage:    upi-recon.py <phone_number> (query all possible UPI addresses)
-                    upi-recon.py <phone_number> -t 5 (query all possible UPI addresses with specified number of threads)
-                    upi-recon.py <phone_number> -s <suffix> (query a single UPI address with a specific suffix)
-                    upi-recon.py -g <gmail_address> (query common Google Pay UPI addresses for specified google account)
+	#  Author: Karan Saini (@squeal)
+	#  URL: https://github.com/qurbat/upi-recon
+        #  Usage:    upi-recon.py <e.g., 9999999999> (query all suffixes for phone number)
+                     upi-recon.py -g <e.g., example@gmail.com> (query known gpay suffixes for google account)
+                     upi-recon.py -v <e.g., address@psp> (query a single UPI VPA)
+                     upi-recon.py -i <e.g., identifier> (query all suffixes for an arbitrary alphanumeric identifier)
+                     upi-recon.py -f <e.g., MH01AA1234> (query known FASTag suffixes for vehicle registration number)
 """
 
-suffix_file = open("vpa_suffixes.txt", "r")
-upi_suffix_dict = suffix_file.read().splitlines() # read all suffixes into a list
-suffix_file.close()
+#  opting to load lists from a file instead of hardcoding them
+#  as this would be more flexible, allow for easier updates,
+#  and allow others to make use of the lists provided
+with open("data/general_suffixes.txt", "r") as suffix_file:
+    upi_suffix_dict = suffix_file.read().splitlines() #  read all suffixes into a list
 
-gpay_suffix_dict = ['okicici', 'oksbi', 'okaxis', 'okhdfcbank']
+with open("data/fastag_suffixes.txt", "r") as fastag_suffix_file:
+    fastag_suffix_dict = fastag_suffix_file.read().splitlines()
+
+with open("data/gpay_suffixes.txt", "r") as gpay_suffix_file:
+    gpay_suffix_dict = gpay_suffix_file.read().splitlines()
+
+def searchvpa(searchtext, vpa_dict, threadcount):
+    if(threadcount == 0):
+        for suffix in track(vpa_dict, description="querying . . . "):
+            try:
+                address_discovery(searchtext + '@' + suffix, API_URL + api_key_id)
+            except KeyboardInterrupt:
+                print('[!] execution interrupted. quitting...')
+                exit(0)
+    else:
+        threadcount = 10 if threadcount > 10 else threadcount
+        with concurrent.futures.ThreadPoolExecutor(max_workers=threadcount) as executor:
+            try:
+                for suffix in vpa_dict:
+                    executor.submit(address_discovery, searchtext + '@' + suffix, API_URL + api_key_id)
+                    sleep(rand(0.1, 0.2))
+            except KeyboardInterrupt:
+                #  quit ungracefully on keyboard interrupt:
+                #  considering the bandwidth consumed for requests,
+                #  there is no reason to wait for the threads to finish
+                #  sorry for the inconvenience
+                executor._threads.clear()
+                concurrent.futures.thread._threads_queues.clear()
+                print('\n[!] execution interrupted. quitting...')
+    print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    exit(1)
 
 def address_discovery(vpa, api_url):
-    try:
-        r = requests.post(api_url, data={'entity':'vpa','value':vpa}, headers={'Connection':'close'})
-        if r.status_code == 200 and r.json()['success'] is True:
-            print('[+] ' + vpa + ' is a valid UPI payment address registered to ' + r.json()['customer_name']) if r.json()['customer_name'] else print('[!] The name associated with the UPI payment address could not be determined')
+    r = requests.post(api_url, data={'entity':'vpa','value':vpa}, headers={'Connection':'close'})
+    if r.status_code == 200 and r.json()['success'] is True:
+        print('[+] ' + vpa + ' is a valid UPI payment address registered to ' + r.json()['customer_name']) if r.json()['customer_name'] else print('[!] The name associated with the UPI payment address could not be determined')
 #       if r.status_code == 200 and r.json()['success'] == False:
 #            print('[-] ' + vpa + ' not a valid UPI address')
 #  todo:      store in dict by default and print if verbosity is set
-        if r.status_code == 400 and "Please enter a valid Virtual Payment Address" in r.text:
-            print('[-] query failed for ' + vpa)
-            print('[!] "' + suffix + '" may not be a valid suffix')
-    except Exception as e:
-        print(e)
+    if r.status_code == 400 and "Please enter a valid Virtual Payment Address" in r.text:
+        print('[-] query failed for ' + vpa)
+        print('[!] "' + vpa + '" may not be a valid address')
 
 
 if __name__ == '__main__':
     #  argument definition
-    parser = argparse.ArgumentParser(description='fetch UPI addresses and associated information for a given phone number')
+    parser = argparse.ArgumentParser(prog='upi-recon.py')
     #  primary arguments
-    parser.add_argument('-t', '--threads', type=int, default=None, help='number of threads to use for parallel address discovery')
+    parser.add_argument('-t', '--threads', type=int, default=0, help='number of threads to use for parallel address discovery')
     parser.add_argument('-q', '--quiet', default=False, action='store_true', help='suppress banner')
     #  group arguments
     group_1 = parser.add_mutually_exclusive_group()
-    group_1.add_argument('--api_key_id', type=str, help='add api_key_id to config.ini')
+    group_1.add_argument('--api_key_id', type=str, help='add api_key_id to config/config.ini')
     group_2 = parser.add_mutually_exclusive_group()
-    group_2.add_argument('-a', '--all', default=True, action='store_true', help='query all suffixes')
-    group_2.add_argument('-s', '--suffix', type=str, help='query a specific suffix')
+    group_2.add_argument('phone', type=str, nargs='?', help='phone number to query UPI addresses for')
     group_3 = parser.add_mutually_exclusive_group()
-    group_3.add_argument('phone', type=str, nargs='?', help='phone number to query UPI addresses for')
     group_3.add_argument('-g', '--gpay', type=str, nargs='?', help='enter gmail address to query Google Pay UPI addresses for')
+    group_4 = parser.add_mutually_exclusive_group()
+    group_4.add_argument('-v', '--vpa', type=str, nargs='?', help='enter a single VPA to query')
+    group_5 = parser.add_mutually_exclusive_group()
+    group_5.add_argument('-i', '--identifier', type=str, nargs='?', help='enter an address to query against all providers')
+    group_6 = parser.add_mutually_exclusive_group()
+    group_6.add_argument('-f', '--fastag', type=str, nargs='?', help='Enter a vehicle number to search for')
+    
     #  parse arguments
     arguments = parser.parse_args()
     #  check the configuration
@@ -78,84 +115,55 @@ if __name__ == '__main__':
     #  deal with arguments
     if arguments.quiet is False:
         print(banner)
-    if arguments.api_key_id:  #  write api_key_id to config.ini if provided 
+    if arguments.api_key_id:  #  write api_key_id to config/config.ini if provided 
         config.set('main', 'api_key_id', arguments.api_key_id)
         with open(config_file, 'w') as configfile:
             config.write(configfile)
-    # set variables and normalize input
+    
+    #  API stuff
     API_URL = 'https://api.razorpay.com/v1/payments/validate/account?key_id='
     api_key_id = config.get('main', 'api_key_id')
-    if not arguments.gpay and not arguments.phone:
-        print('[!] please enter a phone number or gmail address')
-        exit(1)
-    if arguments.gpay and not arguments.phone:
-        email = arguments.gpay[:-10] if arguments.gpay.endswith('@gmail.com') else arguments.gpay
-        phone = '8888888888'
-    elif arguments.phone and arguments.gpay:
-        print('[!] please enter either a phone number or a gmail address')
-        exit(1)
+    #  check if api_key_id is correct
+    if api_key_id and not api_key_id[0:3] == 'rzp':
+        exit('[!] invalid api_key_id')
+    #  print informational header
+    print('[i] starting at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    #  query address directly
+    #  this may not be the best way to handle this, but it works for now
+    if arguments.vpa and '@' in arguments.vpa:
+        address_discovery(arguments.vpa, API_URL + api_key_id)
+    elif arguments.vpa and '@' not in arguments.vpa:
+        print('[!] please enter a full, valid UPI address e.g. <identifier>@<provider>')
+        exit(0)
+
+    #  query based on phone number
     elif arguments.phone:
-        phone = arguments.phone[2:] if arguments.phone[0:2] == '91' and len(arguments.phone) > 10 else arguments.phone
-        if len(phone) != 10:
+        searchtext = arguments.phone[2:] if arguments.phone[0:2] == '91' and len(arguments.phone) > 10 else arguments.phone
+        if not searchtext.isdigit():
+            exit('[!] phone number must be numeric')
+        if len(searchtext) != 10:
             print('[!] please enter a valid 10 digit phone number')
             exit(1)
-    # check if api_key_id is correct
-    if api_key_id and not api_key_id[0:3] == 'rzp':
-        quit('[!] invalid api_key_id')
-    if not phone.isdigit():
-        quit('[!] phone number must be numeric. use -g to query Google Pay addresses')
-    #  informational header
-    print('[i] starting at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-
-    #  do the thing
-    if arguments.suffix and arguments.gpay:
-        print('[!] cannot use suffix and gpay at the same time. please specify only one.')
-        exit(1)
-
-    elif arguments.suffix:
-        arguments.all = False
-        suffix = arguments.suffix[1:] if arguments.suffix[0] == '@' else arguments.suffix
-        print('[i] querying UPI addresses for phone number ' + phone)
-        address_discovery(phone + '@' + suffix, API_URL + api_key_id)
-        print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-        exit(1)
-    
+        print('[i] querying {} suffixes for phone number '.format(len(upi_suffix_dict)) + searchtext)
+        searchvpa(searchtext, upi_suffix_dict, arguments.threads)
+    #  query based on gpay address
     elif arguments.gpay:
-        if arguments.threads:
-            print('[i] querying Google Pay UPI addresses for ' + email + '@gmail.com with ' + str(arguments.threads) + ' threads')
-            with concurrent.futures.ThreadPoolExecutor(max_workers=arguments.threads) as executor:
-                for suffix in gpay_suffix_dict:
-                    try:
-                        executor.submit(address_discovery, email + '@' + suffix, API_URL + api_key_id)
-                        sleep(rand(0.1, 0.2))
-                    except KeyboardInterrupt as e:
-                        print('\n[!] interrupted! stopping threads...')
-                        exit(1)
-            print ('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-            exit(1)
-        else:
-            print('[i] querying Google Pay UPI addresses for ' + email + '@gmail.com')
-            for suffix in track(gpay_suffix_dict):
-                address_discovery(email + '@' + suffix, API_URL + api_key_id)
-            print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-            exit(1)
-    
-    elif arguments.all and not arguments.threads: #  query all with no concurrency
-        print('[i] querying UPI addresses for phone number ' + phone)
-        for suffix in track(upi_suffix_dict):
-            address_discovery(phone + '@' + suffix, API_URL + api_key_id)
-        print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-        exit(1)
-
-    elif arguments.threads and not arguments.gpay: #  query all with threading
-        print('[i] querying UPI addresses for phone number ' + phone + ' with ' + str(arguments.threads) + ' threads')
-        with concurrent.futures.ThreadPoolExecutor(max_workers=arguments.threads) as executor:
-            for suffix in upi_suffix_dict:
-                try:
-                    executor.submit(address_discovery, phone + '@' + suffix, API_URL + api_key_id)
-                    sleep(rand(0.1, 0.2))
-                except KeyboardInterrupt:
-                    print('\n[!] interrupted! stopping threads...')
-                    exit(1)
-        print('[i] finished at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+        searchtext = arguments.gpay[:-10] if arguments.gpay.endswith('@gmail.com') else arguments.gpay
+        print('[i] querying {} suffixes for '.format(len(gpay_suffix_dict)) + searchtext + '@gmail.com')
+        searchvpa(searchtext, gpay_suffix_dict, 4) #  overriding threads to 4 as there are only 4 VPA addresses to check for gpay
+    #  query based on fastag vehicle registration number
+    elif arguments.fastag:
+        searchtext = 'netc.' + arguments.fastag
+        print('[i] querying {} suffixes for vehicle '.format(len(fastag_suffix_dict)) + arguments.fastag)
+        searchvpa(searchtext, fastag_suffix_dict, arguments.threads)
+    #  query alphanumeric identifier across all providers
+    elif arguments.identifier:
+        searchtext = arguments.identifier if '@' not in arguments.identifier else arguments.identifier.split('@')[0]
+        print('[i] querying {} suffixes for identifier '.format(len(upi_suffix_dict)) + searchtext)
+        searchvpa(searchtext, upi_suffix_dict, arguments.threads)
+    #  print error if no arguments provided
+    #  this is a probably a bad way to handle empty arguments, but it works 
+    else:
+        print('[!] please enter a valid argument')
+        print('[!] usage: upi-recon.py -h for help')
         exit(1)
