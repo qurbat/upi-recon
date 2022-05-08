@@ -30,7 +30,7 @@ dbs
 dcb
 denabank
 dlb
-dnspay
+dnsbank
 eazypay
 equitas
 ezeepay
