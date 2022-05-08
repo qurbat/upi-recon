@@ -1,7 +1,8 @@
 # upi-recon
 ![screenshot of upi-recon](https://i.imgur.com/GexQjBq.gif)
 
-A command line tool for UPI payment address discovery and reconnaissance.
+A command line tool for UPI payment address discovery and reconnaissance. This project has been created to demonstrate the range of correlated information which can be extracted from a discrete data point. Various examples are provided of input data which can then be used to obtain the UPI payment addresses.
+
 ## Requirements
 `pip install -r requirements.txt`
 
