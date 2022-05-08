@@ -39,6 +39,9 @@ banner = """
 with open("data/general_suffixes.txt", "r") as suffix_file:
     upi_suffix_dict = suffix_file.read().splitlines() #  read all suffixes into a list
 
+with open("data/mobile_suffixes.txt", "r") as mobile_suffix_file:
+    mobile_suffix_dict = mobile_suffix_file.read().splitlines()
+
 with open("data/fastag_suffixes.txt", "r") as fastag_suffix_file:
     fastag_suffix_dict = fastag_suffix_file.read().splitlines()
 
@@ -144,8 +147,8 @@ if __name__ == '__main__':
         if len(searchtext) != 10:
             print('[!] please enter a valid 10 digit phone number')
             exit(1)
-        print('[i] querying {} suffixes for phone number '.format(len(upi_suffix_dict)) + searchtext)
-        searchvpa(searchtext, upi_suffix_dict, arguments.threads)
+        print('[i] querying {} suffixes for phone number '.format(len(mobile_suffix_dict)) + searchtext)
+        searchvpa(searchtext, mobile_suffix_dict, arguments.threads)
     #  query based on gpay address
     elif arguments.gpay:
         searchtext = arguments.gpay[:-10] if arguments.gpay.endswith('@gmail.com') else arguments.gpay
