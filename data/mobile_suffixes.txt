@@ -16,13 +16,12 @@ axl
 bandhan
 barodampay
 barodapay
-birla
 boi
 cbin
 cboi
 centralbank
-cmsidfc
 cnrb
+corp
 csbcash
 csbpay
 cub
@@ -31,7 +30,6 @@ dcb
 denabank
 dlb
 dnsbank
-eazypay
 equitas
 ezeepay
 fbl
@@ -48,7 +46,6 @@ idbi
 idbibank
 idfc
 idfcbank
-idfcnetc
 ikwik
 imobile
 indbank
@@ -75,11 +72,6 @@ lvbank
 mahb
 myicici
 obc
-okaxis
-okbizaxis
-okhdfcbank
-okicici
-oksbi
 paytm
 payzapp
 pingpay
@@ -87,7 +79,6 @@ pnb
 pockets
 psb
 purz
-rajgovhdfcbank
 rbl
 rmhdfcbank
 sbi
@@ -114,11 +105,6 @@ utbi
 vijayabank
 vijb
 vjb
-waaxis
-wahdfcbank
-waicici
-wasbi
 yapl
 ybl
 yesbank
-yesbankltd
