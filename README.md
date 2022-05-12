@@ -10,7 +10,7 @@ You can use the following command to add an API key ID to the configuration file
 
 `upi-recon.py <phone_number> --api_key_id <api_key_id>`
 
-Please [refer to the documentation](https://razorpay.com/docs/payments/dashboard/settings/api-keys/) provided by Razorpay in order to generate valid API credentials.
+Please [refer to the documentation](https://razorpay.com/docs/payments/dashboard/settings/api-keys/) provided by Razorpay in order to generate valid `live` API credentials. **Note:** `test` credentials will not work.
 
 **Note:** Razorpay does not seem to consider an API key ID as being sensitive information. Further, while the process of arbitrarily discovering the API key ID for a Razorpay merchant is fairly straightforward, it is beyond the scope of the repository and will thus not be covered. It is suggested that you generate your own Razorpay API credentials for use with upi-recon.
 
