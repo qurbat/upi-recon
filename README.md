@@ -1,8 +1,6 @@
 # upi-recon
 ![screenshot of upi-recon](https://i.imgur.com/GexQjBq.gif)
 
-A command line tool for UPI payment address discovery and reconnaissance.
-
 This project was primarily created for demonstrating the range of correlated information that can be extracted from and along with Unified Payments Interface ("UPI") Virtual Payment Addresses. upi-recon has support for several types of queries that can be used to obtain personal information associated with UPI payment addresses.
 
 ## Requirements
