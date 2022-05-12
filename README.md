@@ -3,7 +3,7 @@
 
 A command line tool for UPI payment address discovery and reconnaissance.
 
-## About
+### About
 This project was primarily created for demonstrating the range of correlated information that can be extracted from and along with Unified Payments Interface ("UPI") Virtual Payment Addresses. upi-recon has support for several types of queries that can be used to obtain personal information associated with UPI payment addresses.
 
 ## Requirements
@@ -14,7 +14,9 @@ You can use the following command to add an API key ID to the configuration file
 
 `upi-recon.py <phone_number> --api_key_id <api_key_id>`
 
-Please [refer to the documentation](https://razorpay.com/docs/payments/dashboard/settings/api-keys/) provided by Razorpay in order to generate valid `live` API credentials. **Note:** `test` credentials will not work.
+Please [refer to the documentation](https://razorpay.com/docs/payments/dashboard/settings/api-keys/) provided by Razorpay in order to generate valid `live` API credentials.
+
+**Note:** `test` credentials will not work.
 
 **Note:** Razorpay does not seem to consider an API key ID as being sensitive information. Further, while the process of arbitrarily discovering the API key ID for a Razorpay merchant is fairly straightforward, it is beyond the scope of the repository and will thus not be covered. It is suggested that you generate your own Razorpay API credentials for use with upi-recon.
 
