@@ -38,9 +38,10 @@ Contributions are welcome. Feature wishlist:
 - [ ] Introduce support for more API providers
 - [ ] Introduce support for wordlist based address discovery
 - [ ] Refactor for release as Python module
-- [x] Introduce support for FASTag addresses
-- [x] Introduce support for Google Pay addresses
-- [x] Improve argument parsing code
+
+## Acknowledgements
+
+- Srikanth L (added FASTag and Google support)
 
 ## Disclaimer
 

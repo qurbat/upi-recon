@@ -32,6 +32,7 @@ denabank
 dlb
 dnsbank
 eazypay
+esaf
 equitas
 ezeepay
 fbl
@@ -56,6 +57,7 @@ indianbank
 indianbk
 indus
 iob
+janabank
 jio
 jkb
 jsbp
@@ -74,6 +76,7 @@ lvb
 lvbank
 mahb
 myicici
+nsdl
 obc
 okaxis
 okbizaxis
@@ -85,6 +88,7 @@ payzapp
 pingpay
 pnb
 pockets
+postbank
 psb
 purz
 rajgovhdfcbank
@@ -111,6 +115,7 @@ unionbankofindia
 united
 upi
 utbi
+utkarshbank
 vijayabank
 vijb
 vjb
