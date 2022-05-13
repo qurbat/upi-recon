@@ -75,6 +75,7 @@ def searchvpa(searchtext, vpa_dict, threadcount):
     exit(1)
 
 def address_discovery(vpa, api_url):
+    
     r = requests.post(api_url, data={'entity':'vpa','value':vpa}, headers={'Connection':'close'})
     if r.status_code == 200 and r.json()['success'] is True:
         print('[+] ' + vpa + ' is a valid UPI payment address registered to ' + r.json()['customer_name']) if r.json()['customer_name'] else print('[!] The name associated with the UPI payment address could not be determined')
