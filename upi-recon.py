@@ -80,7 +80,8 @@ def address_discovery(vpa, api_url):
 #            print('[-] ' + vpa + ' not a valid UPI address')
 #  todo:      store in dict by default and print if verbosity is set
     elif r.status_code != 200:
-        print('[-] query failed for ' + vpa)
+        if arguments.debug:
+            print('[-] query failed for ' + vpa)
 #        print('[!] "' + vpa + '" may not be a valid address')
 
 
@@ -90,6 +91,7 @@ if __name__ == '__main__':
     #  primary arguments
     parser.add_argument('-t', '--threads', type=int, default=0, help='number of threads to use for parallel address discovery')
     parser.add_argument('-q', '--quiet', default=False, action='store_true', help='suppress banner')
+    parser.add_argument('-d', '--debug', default=False, action='store_true', help='Show failed list')
     #  group arguments
     group_2 = parser.add_mutually_exclusive_group()
     group_2.add_argument('phone', type=str, nargs='?', help='phone number to query UPI addresses for')
