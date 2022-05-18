@@ -2,8 +2,6 @@
 #  -*- coding: utf-8 -*-
 
 import argparse
-from audioop import add
-import os
 import requests
 import concurrent.futures
 
@@ -11,7 +9,6 @@ from time import sleep
 from sys import exit
 from random import uniform as rand
 from datetime import datetime
-from configparser import ConfigParser
 from rich.progress import track
 
 banner = """
@@ -52,7 +49,7 @@ def searchvpa(searchtext, vpa_dict, threadcount):
     if(threadcount == 0):
         for suffix in track(vpa_dict, description="querying . . . "):
             try:
-                address_discovery(searchtext + '@' + suffix, API_URL + api_key_id)
+                address_discovery(searchtext + '@' + suffix, API_URL)
             except KeyboardInterrupt:
                 print('[!] execution interrupted. quitting...')
                 exit(0)
@@ -61,7 +58,7 @@ def searchvpa(searchtext, vpa_dict, threadcount):
         with concurrent.futures.ThreadPoolExecutor(max_workers=threadcount) as executor:
             try:
                 for suffix in vpa_dict:
-                    executor.submit(address_discovery, searchtext + '@' + suffix, API_URL + api_key_id)
+                    executor.submit(address_discovery, searchtext + '@' + suffix, API_URL)
                     sleep(rand(0.1, 0.2))
             except KeyboardInterrupt:
                 #  quit ungracefully on keyboard interrupt:
@@ -76,13 +73,13 @@ def searchvpa(searchtext, vpa_dict, threadcount):
 
 def address_discovery(vpa, api_url):
     
-    r = requests.post(api_url, data={'entity':'vpa','value':vpa}, headers={'Connection':'close'})
-    if r.status_code == 200 and r.json()['success'] is True:
+    r = requests.post(api_url, data={'vpa':vpa,'merchant_id':'juspay'}, headers={'Connection':'close'})
+    if r.status_code == 200 and r.json()['status'] == 'VALID':
         print('[+] ' + vpa + ' is a valid UPI payment address registered to ' + r.json()['customer_name']) if r.json()['customer_name'] else print('[!] The name associated with the UPI payment address could not be determined')
 #       if r.status_code == 200 and r.json()['success'] == False:
 #            print('[-] ' + vpa + ' not a valid UPI address')
 #  todo:      store in dict by default and print if verbosity is set
-    if r.status_code == 400 and "Please enter a valid Virtual Payment Address" in r.text:
+    else:
         print('[-] query failed for ' + vpa)
         print('[!] "' + vpa + '" may not be a valid address')
 
@@ -94,8 +91,6 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--threads', type=int, default=0, help='number of threads to use for parallel address discovery')
     parser.add_argument('-q', '--quiet', default=False, action='store_true', help='suppress banner')
     #  group arguments
-    group_1 = parser.add_mutually_exclusive_group()
-    group_1.add_argument('--api_key_id', type=str, help='add api_key_id to config/config.ini')
     group_2 = parser.add_mutually_exclusive_group()
     group_2.add_argument('phone', type=str, nargs='?', help='phone number to query UPI addresses for')
     group_3 = parser.add_mutually_exclusive_group()
@@ -109,33 +104,19 @@ if __name__ == '__main__':
     
     #  parse arguments
     arguments = parser.parse_args()
-    #  check the configuration
-    if not os.path.exists('config/config.ini'):
-        print('[!] config/config.ini not found! please create the config file\n[!] you may refer to config/config.ini.example for help')
-        exit(1)
-    config = ConfigParser()
-    config_file = 'config/config.ini'
-    config.read(config_file)
     #  deal with arguments
     if arguments.quiet is False:
         print(banner)
-    if arguments.api_key_id:  #  write api_key_id to config/config.ini if provided 
-        config.set('main', 'api_key_id', arguments.api_key_id)
-        with open(config_file, 'w') as configfile:
-            config.write(configfile)
     
     #  API stuff
-    API_URL = 'https://api.razorpay.com/v1/payments/validate/account?key_id='
-    api_key_id = config.get('main', 'api_key_id')
-    #  check if api_key_id is correct
-    if api_key_id and not api_key_id[0:3] == 'rzp':
-        exit('[!] invalid api_key_id')
+    API_URL = 'https://api.juspay.in/upi/verify-vpa'
+
     #  print informational header
     print('[i] starting at ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     #  query address directly
     #  this may not be the best way to handle this, but it works for now
     if arguments.vpa and '@' in arguments.vpa:
-        address_discovery(arguments.vpa, API_URL + api_key_id)
+        address_discovery(arguments.vpa, API_URL)
     elif arguments.vpa and '@' not in arguments.vpa:
         print('[!] please enter a full, valid UPI address e.g. <identifier>@<provider>')
         exit(0)
