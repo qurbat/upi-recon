@@ -79,9 +79,9 @@ def address_discovery(vpa, api_url):
 #       if r.status_code == 200 and r.json()['success'] == False:
 #            print('[-] ' + vpa + ' not a valid UPI address')
 #  todo:      store in dict by default and print if verbosity is set
-    else:
+    elif r.status_code != 200:
         print('[-] query failed for ' + vpa)
-        print('[!] "' + vpa + '" may not be a valid address')
+#        print('[!] "' + vpa + '" may not be a valid address')
 
 
 if __name__ == '__main__':
