@@ -31,6 +31,7 @@ Contributions are welcome. Feature wishlist:
 ## Acknowledgements
 
 - Srikanth L (added FASTag and Google support)
+- Anant Shrivastava (QoL improvements)
 
 ## Disclaimer
 
