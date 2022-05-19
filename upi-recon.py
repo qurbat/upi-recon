@@ -24,6 +24,7 @@ banner = """
 	#  Author: Karan Saini (@squeal)
 	#  URL: https://github.com/qurbat/upi-recon
         #  Usage:    upi-recon.py <e.g., 9999999999> (query all suffixes for phone number)
+                     upi-recon.py -w <e.g., address_list_file> (query addresses from file)
                      upi-recon.py -g <e.g., example@gmail.com> (query known gpay suffixes for google account)
                      upi-recon.py -v <e.g., address@psp> (query a single UPI VPA)
                      upi-recon.py -i <e.g., identifier> (query all suffixes for an arbitrary alphanumeric identifier)
@@ -73,16 +74,14 @@ def searchvpa(searchtext, vpa_dict, threadcount):
 
 def address_discovery(vpa, api_url):
     
-    r = requests.post(api_url, data={'vpa':vpa,'merchant_id':'juspay'}, headers={'Connection':'close'})
+    r = requests.post(api_url, data={'vpa':vpa,'merchant_id':'milaap'}, headers={'Connection':'close'})
     if r.status_code == 200 and r.json()['status'] == 'VALID':
         print('[+] ' + vpa + ' is a valid UPI payment address registered to ' + r.json()['customer_name']) if r.json()['customer_name'] else print('[!] The name associated with the UPI payment address could not be determined')
 #       if r.status_code == 200 and r.json()['success'] == False:
 #            print('[-] ' + vpa + ' not a valid UPI address')
 #  todo:      store in dict by default and print if verbosity is set
-    elif r.status_code != 200:
-        if arguments.debug:
-            print('[-] query failed for ' + vpa)
-#        print('[!] "' + vpa + '" may not be a valid address')
+    elif r.status_code == 200 and r.json()['status'] == 'INVALID' and arguments.debug:
+        print('[-] query failed for ' + vpa)
 
 
 if __name__ == '__main__':
@@ -91,8 +90,10 @@ if __name__ == '__main__':
     #  primary arguments
     parser.add_argument('-t', '--threads', type=int, default=0, help='number of threads to use for parallel address discovery')
     parser.add_argument('-q', '--quiet', default=False, action='store_true', help='suppress banner')
-    parser.add_argument('-d', '--debug', default=False, action='store_true', help='Show failed list')
+    parser.add_argument('-d', '--debug', default=False, action='store_true', help='show failed queries')
     #  group arguments
+    group_1 = parser.add_mutually_exclusive_group()
+    group_1.add_argument('-w', '--wordlist', type=str, nargs='?', help='use wordlist for suffixes')
     group_2 = parser.add_mutually_exclusive_group()
     group_2.add_argument('phone', type=str, nargs='?', help='phone number to query UPI addresses for')
     group_3 = parser.add_mutually_exclusive_group()
@@ -150,6 +151,12 @@ if __name__ == '__main__':
         searchvpa(searchtext, upi_suffix_dict, arguments.threads)
     #  print error if no arguments provided
     #  this is a probably a bad way to handle empty arguments, but it works 
+    elif arguments.wordlist:
+        with open("{}".format(arguments.wordlist), "r") as wordlist_file:
+            wordlist = wordlist_file.read().splitlines() #  read wordlist
+            print('[i] querying {} addresses from wordlist '.format(len(wordlist)))
+            for address in wordlist:
+                address_discovery(address, API_URL)
     else:
         print('[!] please enter a valid argument')
         print('[!] usage: upi-recon.py -h for help')
