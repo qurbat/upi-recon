@@ -33,7 +33,7 @@ Contributions are welcome. Feature wishlist:
 - Srikanth L (added FASTag and Google support)
 - Aseem Shrey (authored Golang port of upi-recon)
 - Anant Shrivastava (QoL improvements)
-- 
+
 ## Disclaimer
 
 Note: Unified Payment Interface ("UPI") Virtual Payment Addresses ("VPAs") do not carry a data security classification by virtue of their usage in practice, and should as such be considered to be public information, similar to how email addresses may be considered to be public information.
