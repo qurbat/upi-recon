@@ -1,6 +1,6 @@
 # upi-recon
 
-Update - May 22, 2022: The tool has limited functionality at the moment. This will be addressed in the next release. (https://github.com/qurbat/upi-recon/issues/22)
+**Update as of May 22, 2022:** The tool has limited functionality at the moment. This will be addressed in the next release. (https://github.com/qurbat/upi-recon/issues/22)
 
 ![screenshot of upi-recon](https://i.imgur.com/GexQjBq.gif)
 
